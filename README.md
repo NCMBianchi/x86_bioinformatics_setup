@@ -8,6 +8,8 @@ This script installs all dependencies necessary to manage different Python versi
 - Installs the 2.2.2. version of [PyTorch](https://pytorch.org/get-started/previous-versions/) and its dependencies.
 - Installs [R](https://www.r-project.org) to run scripts locally within hybrid pipelines, but not [Rstudio](https://posit.co/downloads/) which only recognises the default R version (check the [Rig](https://github.com/r-lib/rig) repository to manage different versions of R in Rstudio).
 
+![BIOINFORMATICS_pipeline](https://github.com/user-attachments/assets/3f00be49-bf84-49c7-993e-0e9420ab4909)
+
 ## Installation
 Clone this repository, move into it and activate the scritp with:
 ```
