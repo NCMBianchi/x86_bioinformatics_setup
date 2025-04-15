@@ -1,7 +1,7 @@
 # x86 Bioinformatics Setup
 This script installs all dependencies necessary to manage different Python versions via Pyenv and Conda, in order to use bioinformatics tools that require x86_64 architecture and thus do not work on arm64 (Apple Silicon, M1-M3 processors).
 
-![image]()
+![bioinformatics-BANNER](https://github.com/user-attachments/assets/60abeabd-1a83-46e4-803f-83b71380da56)
 
 ## Features
 - Allows to run packages such as [bowtie](https://anaconda.org/bioconda/bowtie) and [macs2](https://anaconda.org/bioconda/macs2) that are not –or not fully– supported in arm64.
