@@ -397,21 +397,6 @@ main() {
     echo -e "${YELLOW}Installing HTSeq...${NC}"
     conda install -y -c conda-forge -c bioconda htseq || echo -e "${YELLOW}HTSeq failed, continuing...${NC}"
 
-    # PyTorch and related packages (platform-specific)
-    echo -e "${GREEN}Installing PyTorch and related packages...${NC}"
-    if [[ "$PLATFORM" == "darwin" ]] && [[ "$ARCH" == "arm64" ]]; then
-        echo -e "${YELLOW}Note: On ARM Mac, PyTorch may use CPU version for compatibility${NC}"
-    fi
-
-    echo -e "${YELLOW}Installing PyTorch 2.2.2...${NC}"
-    conda install -y -c pytorch torch=2.2.2 torchvision || {
-        echo -e "${YELLOW}PyTorch installation failed, trying without version pin...${NC}"
-        conda install -y -c pytorch torch torchvision || echo -e "${YELLOW}PyTorch failed, continuing...${NC}"
-    }
-
-    echo -e "${YELLOW}Installing torchsde...${NC}"
-    conda install -y -c conda-forge torchsde || echo -e "${YELLOW}torchsde failed, continuing...${NC}"
-
     # R and R packages - install in batches for better success rate
     echo -e "${GREEN}Installing R and R packages...${NC}"
 
@@ -421,9 +406,8 @@ main() {
     echo -e "${YELLOW}Installing R tidyverse packages...${NC}"
     conda install -y -c conda-forge r-tidyverse r-dplyr r-ggplot2 || echo -e "${YELLOW}Some tidyverse packages failed, continuing...${NC}"
 
-    echo -e "${YELLOW}Installing Bioconductor packages...${NC}"
-    conda install -y -c conda-forge -c bioconda \
-        bioconductor r-biocmanager || echo -e "${YELLOW}Some Bioconductor packages failed, continuing...${NC}"
+    echo -e "${YELLOW}Installing BiocManager for R...${NC}"
+    conda install -y -c conda-forge r-biocmanager || echo -e "${YELLOW}BiocManager failed, continuing...${NC}"
 
     echo -e "${YELLOW}Installing Seurat for single-cell analysis...${NC}"
     conda install -y -c conda-forge r-seurat || echo -e "${YELLOW}Seurat failed, continuing...${NC}"
