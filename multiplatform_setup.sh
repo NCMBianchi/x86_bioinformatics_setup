@@ -240,6 +240,19 @@ install_conda() {
 
         # Add conda to PATH for current session
         export PATH="$CONDA_BASE/bin:$PATH"
+    else
+        # Conda exists - check if it's system-wide
+        CONDA_PATH=$(which conda)
+        CONDA_BASE=$(dirname $(dirname "$CONDA_PATH"))
+
+        if [[ "$CONDA_BASE" == "/opt"* ]] || [[ "$CONDA_BASE" == "/usr"* ]]; then
+            echo -e "${YELLOW}Warning: System-wide conda installation detected at $CONDA_BASE${NC}"
+            echo -e "${YELLOW}You may need sudo privileges to install packages.${NC}"
+            echo -e "${YELLOW}Consider installing a user-specific conda in $HOME/miniconda3${NC}"
+            echo -e "${YELLOW}To do this, uninstall system conda or use a different user.${NC}"
+        else
+            echo -e "${GREEN}Using existing conda installation at $CONDA_BASE${NC}"
+        fi
     fi
 }
 
@@ -326,7 +339,7 @@ main() {
         bioconda::bowtie \
         bioconda::bowtie2 \
         bioconda::bwa \
-        bioconda::freebies \
+        bioconda::freebayes \
         bioconda::hisat2 \
         bioconda::multiqc \
         bioconda::samtools \
@@ -335,11 +348,14 @@ main() {
         bioconda::macs2 \
         bioconda::stringtie \
         bioconda::vcftools \
-        bioconda::kallisto \
-        bioconda::snakemake
+        bioconda::kallisto
 
     # NCBI datasets
     conda install -y -c conda-forge ncbi-datasets-cli
+
+    # Install snakemake with conda-forge channel for dependencies
+    echo -e "${GREEN}Installing Snakemake workflow manager...${NC}"
+    conda install -y -c conda-forge -c bioconda snakemake-minimal
 
     # Python scientific packages
     conda install -y \
