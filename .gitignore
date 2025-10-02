@@ -1,3 +1,4 @@
 IGNORE
 .DS_Store
 Icon?
+arm64_setup.sh
