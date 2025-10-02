@@ -15,10 +15,21 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Snakemake workflow management system to bioinformatics packages
 - Multi-platform documentation in README
 - `IGNORE/changes.md` for tracking development
+- `install_r_packages.R` helper script for Bioconductor package installation
+- Automatic Bioconductor package installation within conda environment during setup
 
 ### Changed
 - Replaced `wget` with `curl` for consistency across all platforms
 - Updated README with platform compatibility table and troubleshooting section
+- Fixed `freebayes` typo (was `freebies`)
+- Bioconductor packages (DESeq2, edgeR, limma, recount3, Rsubread) now installed via BiocManager within conda environment due to outdated conda recipes
+
+### Removed
+- PyTorch and related packages (torch, torchvision, torchsde) - not required for classic bioinformatics workflows
+
+### Fixed
+- Bioconductor package installation failures due to conda requiring ancient R versions (3.2.x, 3.3.x)
+- Installation now uses R's BiocManager while maintaining conda environment isolation
 
 ### Deprecated
 - `arm64_setup.sh` - replaced by `multiplatform_setup.sh` (removed from tracking but kept locally)

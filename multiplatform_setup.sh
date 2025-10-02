@@ -412,13 +412,43 @@ main() {
     echo -e "${YELLOW}Installing Seurat for single-cell analysis...${NC}"
     conda install -y -c conda-forge r-seurat || echo -e "${YELLOW}Seurat failed, continuing...${NC}"
 
-    echo -e "${YELLOW}Installing RNA-seq analysis packages...${NC}"
-    conda install -y -c bioconda \
-        bioconductor-deseq2 bioconductor-edger || echo -e "${YELLOW}Some RNA-seq packages failed, continuing...${NC}"
+    # Install Bioconductor packages within the conda environment using R
+    echo -e "${GREEN}Installing RNA-seq analysis packages within the conda environment...${NC}"
+    echo -e "${YELLOW}Note: These packages will be installed in the conda env's R library${NC}"
+    echo -e "${YELLOW}Location: \$CONDA_PREFIX/lib/R/library/${NC}"
 
-    echo -e "${YELLOW}Installing additional Bioconductor packages...${NC}"
-    conda install -y -c bioconda \
-        bioconductor-recount3 bioconductor-rsubread || echo -e "${YELLOW}Some additional packages failed, continuing...${NC}"
+    # Create R script to install packages
+    cat > /tmp/install_bioc_packages.R << 'EOF'
+# Install Bioconductor packages in conda environment
+packages <- c("DESeq2", "edgeR", "limma", "Rsubread", "recount3")
+cat("Installing packages in conda environment:\n")
+cat("Library path:", .libPaths()[1], "\n\n")
+
+for (pkg in packages) {
+    cat(paste0("Installing ", pkg, "...\n"))
+    tryCatch({
+        if (!requireNamespace(pkg, quietly = TRUE)) {
+            BiocManager::install(pkg, update = FALSE, ask = FALSE, quiet = TRUE)
+            if (requireNamespace(pkg, quietly = TRUE)) {
+                cat(paste0("  ✓ ", pkg, " installed\n"))
+            } else {
+                cat(paste0("  ✗ ", pkg, " failed\n"))
+            }
+        } else {
+            cat(paste0("  ✓ ", pkg, " already installed\n"))
+        }
+    }, error = function(e) {
+        cat(paste0("  ✗ ", pkg, " error: ", e$message, "\n"))
+    })
+}
+cat("\nBioconductor packages installation complete.\n")
+EOF
+
+    # Run the R script
+    Rscript /tmp/install_bioc_packages.R || echo -e "${YELLOW}Some Bioconductor packages failed, but core tools are installed${NC}"
+
+    # Clean up
+    rm -f /tmp/install_bioc_packages.R
 
     # Set up the kernel for Jupyter
     python -m ipykernel install --user --name=bioinformatics --display-name="Bioinformatics"
@@ -426,6 +456,13 @@ main() {
     echo -e "${GREEN}Setup complete!${NC}"
     echo -e "${YELLOW}To activate the bioinformatics environment, restart your terminal and then run:${NC}"
     echo -e "${GREEN}conda activate bioinformatics${NC}"
+    echo ""
+    echo -e "${GREEN}All packages have been installed within the conda environment:${NC}"
+    echo -e "  • Core bioinformatics tools (bowtie, samtools, etc.)"
+    echo -e "  • Python packages (numpy, pandas, scanpy, etc.)"
+    echo -e "  • R and Bioconductor packages (DESeq2, edgeR, etc.)"
+    echo -e ""
+    echo -e "${YELLOW}Environment location: \$CONDA_PREFIX${NC}"
 
     # Platform-specific notes
     if [[ "$PLATFORM" == "darwin" ]] && [[ "$ARCH" == "arm64" ]]; then

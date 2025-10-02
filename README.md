@@ -8,8 +8,8 @@ This script installs all dependencies necessary to manage different Python versi
 - **Automatic detection**: Detects OS and architecture automatically
 - **Force options**: Can force specific platform/architecture configurations
 - Allows to run packages such as [bowtie](https://anaconda.org/bioconda/bowtie) and [macs2](https://anaconda.org/bioconda/macs2) that are not –or not fully– supported in arm64
-- Installs the 2.2.2. version of [PyTorch](https://pytorch.org/get-started/previous-versions/) and its dependencies
 - Installs [R](https://www.r-project.org) to run scripts locally within hybrid pipelines, but not [Rstudio](https://posit.co/downloads/) which only recognises the default R version (check the [Rig](https://github.com/r-lib/rig) repository to manage different versions of R in Rstudio)
+- Automatically installs Bioconductor packages (DESeq2, edgeR, etc.) within the conda environment using BiocManager
 
 <img width="4088" height="4388" alt="BIOINFORMATICS_pipeline (2)" src="https://github.com/user-attachments/assets/cbcd5b9c-d8b1-4fc2-bbf2-3500c061dd16" />
 
@@ -103,15 +103,17 @@ Core tools installed via conda-forge and bioconda:
 ### Scientific Python Packages
 - NumPy, Pandas, SciPy, scikit-learn
 - Jupyter, IPython kernel
-- PyTorch 2.2.2 with torchvision
 - Scanpy, HTSeq
 
 ### R and R Packages
 - R base and essentials
-- Bioconductor
+- BiocManager for package management
 - tidyverse, ggplot2, dplyr
 - Seurat
-- DESeq2, EdgeR, Rsubread
+- **Bioconductor packages** (installed via BiocManager within conda environment):
+  - DESeq2, edgeR, limma (RNA-seq differential expression)
+  - Rsubread (read alignment and counting)
+  - recount3 (access to RNA-seq databases)
 
 ## Shell Configuration
 
@@ -125,7 +127,7 @@ After installation, restart your terminal or source your shell configuration:
 # For zsh
 source ~/.zshrc
 
-# For bash  
+# For bash
 source ~/.bashrc
 
 # For fish
@@ -157,6 +159,15 @@ If packages fail to install due to architecture conflicts, the script will autom
 ```bash
 conda config --env --set subdir osx-64  # For x86_64 on Mac
 conda config --env --set subdir linux-64  # For x86_64 on Linux
+```
+
+### Bioconductor Package Installation
+Some Bioconductor packages (DESeq2, edgeR, limma, etc.) are automatically installed within the conda environment using BiocManager during setup. This approach is used because conda recipes for these packages are outdated and require ancient R versions. If any fail during setup, you can manually install them:
+```bash
+conda activate bioinformatics
+Rscript install_r_packages.R
+# Or within R:
+BiocManager::install(c("DESeq2", "edgeR", "limma"))
 ```
 
 ### Missing Dependencies on Linux
