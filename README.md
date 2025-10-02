@@ -1,7 +1,7 @@
 # x86 Bioinformatics Setup
 This script installs all dependencies necessary to manage different Python versions via Pyenv and Conda, in order to use bioinformatics tools that require x86_64 architecture. Originally designed for ARM64 Macs (Apple Silicon, M1-M3 processors), it now supports multiple platforms and architectures.
 
-![bioinformatics-BANNER](https://github.com/user-attachments/assets/60abeabd-1a83-46e4-803f-83b71380da56)
+![bioinformatics-BANNER](https://github.com/user-attachments/assets/dc32542b-946a-47a6-b6a2-75adb0d8cc14)
 
 ## Features
 - **Multi-platform support**: Works on macOS (both ARM64 and x86_64) and Linux (Arch-based distributions)
@@ -11,7 +11,7 @@ This script installs all dependencies necessary to manage different Python versi
 - Installs the 2.2.2. version of [PyTorch](https://pytorch.org/get-started/previous-versions/) and its dependencies
 - Installs [R](https://www.r-project.org) to run scripts locally within hybrid pipelines, but not [Rstudio](https://posit.co/downloads/) which only recognises the default R version (check the [Rig](https://github.com/r-lib/rig) repository to manage different versions of R in Rstudio)
 
-![BIOINFORMATICS_pipeline](https://github.com/user-attachments/assets/3f00be49-bf84-49c7-993e-0e9420ab4909)
+<img width="4088" height="4388" alt="BIOINFORMATICS_pipeline (2)" src="https://github.com/user-attachments/assets/cbcd5b9c-d8b1-4fc2-bbf2-3500c061dd16" />
 
 ## Supported Platforms
 
