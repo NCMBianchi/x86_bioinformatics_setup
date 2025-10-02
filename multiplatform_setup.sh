@@ -323,82 +323,118 @@ main() {
     if conda env list | grep -q "^bioinformatics "; then
         echo -e "${YELLOW}Conda environment 'bioinformatics' already exists. Skipping creation...${NC}"
     else
-        CONDA_SUBDIR=$CONDA_SUBDIR conda create -n bioinformatics python=3.9 -y
+        # Create environment with conda-forge channel for better dependency resolution
+        CONDA_SUBDIR=$CONDA_SUBDIR conda create -n bioinformatics python=3.9 -c conda-forge -y
     fi
 
     # Activate environment and set architecture
     conda activate bioinformatics
     conda config --env --set subdir $CONDA_SUBDIR
 
-    # Install bioinformatics packages
+    # Configure channels for better package resolution
+    echo -e "${GREEN}Configuring conda channels...${NC}"
+    conda config --env --add channels conda-forge
+    conda config --env --add channels bioconda
+    conda config --env --set channel_priority strict
+
+    # Install bioinformatics packages in batches for better compatibility
     echo -e "${GREEN}Installing bioinformatics packages and dependencies...${NC}"
 
-    # Core bioinformatics tools
-    conda install -y \
-        bioconda::bedtools \
-        bioconda::bowtie \
-        bioconda::bowtie2 \
-        bioconda::bwa \
-        bioconda::freebayes \
-        bioconda::hisat2 \
-        bioconda::multiqc \
-        bioconda::samtools \
-        bioconda::qualimap \
-        bioconda::fastqc \
-        bioconda::macs2 \
-        bioconda::stringtie \
-        bioconda::vcftools \
-        bioconda::kallisto
+    # Batch 1: Core sequence processing tools
+    echo -e "${YELLOW}Installing core tools (bedtools, bowtie, bwa, samtools)...${NC}"
+    conda install -y -c conda-forge -c bioconda \
+        bedtools bowtie bowtie2 bwa samtools || echo -e "${YELLOW}Some core tools failed, continuing...${NC}"
+
+    # Batch 2: Quality control tools (install separately due to dependencies)
+    echo -e "${YELLOW}Installing fastqc...${NC}"
+    conda install -y -c conda-forge -c bioconda fastqc || echo -e "${YELLOW}fastqc failed, continuing...${NC}"
+
+    echo -e "${YELLOW}Installing multiqc...${NC}"
+    conda install -y -c conda-forge -c bioconda multiqc || echo -e "${YELLOW}multiqc failed, continuing...${NC}"
+
+    echo -e "${YELLOW}Installing qualimap...${NC}"
+    conda install -y -c conda-forge -c bioconda qualimap || echo -e "${YELLOW}qualimap failed, continuing...${NC}"
+
+    # Batch 3: Alignment and analysis tools
+    echo -e "${YELLOW}Installing alignment tools (hisat2, stringtie, kallisto)...${NC}"
+    conda install -y -c conda-forge -c bioconda \
+        hisat2 stringtie kallisto || echo -e "${YELLOW}Some alignment tools failed, continuing...${NC}"
+
+    # Batch 4: Peak calling and variant tools
+    echo -e "${YELLOW}Installing macs2...${NC}"
+    conda install -y -c conda-forge -c bioconda macs2 || echo -e "${YELLOW}macs2 failed, continuing...${NC}"
+
+    echo -e "${YELLOW}Installing freebayes...${NC}"
+    conda install -y -c conda-forge -c bioconda freebayes || echo -e "${YELLOW}freebayes failed, continuing...${NC}"
+
+    echo -e "${YELLOW}Installing vcftools...${NC}"
+    conda install -y -c conda-forge -c bioconda vcftools || echo -e "${YELLOW}vcftools failed, continuing...${NC}"
 
     # NCBI datasets
-    conda install -y -c conda-forge ncbi-datasets-cli
+    echo -e "${YELLOW}Installing NCBI datasets CLI...${NC}"
+    conda install -y -c conda-forge ncbi-datasets-cli || echo -e "${YELLOW}NCBI datasets failed, continuing...${NC}"
 
-    # Install snakemake with conda-forge channel for dependencies
-    echo -e "${GREEN}Installing Snakemake workflow manager...${NC}"
-    conda install -y -c conda-forge -c bioconda snakemake-minimal
+    # Workflow management - install separately to avoid conflicts
+    echo -e "${YELLOW}Installing Snakemake workflow manager...${NC}"
+    conda install -y -c conda-forge -c bioconda snakemake-minimal || echo -e "${YELLOW}Snakemake failed, continuing...${NC}"
 
-    # Python scientific packages
-    conda install -y \
-        conda-forge::httpie \
-        conda-forge::jupyter \
-        conda-forge::ipykernel \
-        conda-forge::molmass \
-        conda-forge::networkx \
-        conda-forge::numba \
-        conda-forge::numpy \
-        conda-forge::pandas \
-        conda-forge::scikit-learn \
-        conda-forge::scipy \
-        conda-forge::seaborn \
-        conda-forge::scanpy \
-        bioconda::htseq
+    # Python scientific packages - install in batches for better success rate
+    echo -e "${GREEN}Installing Python scientific packages...${NC}"
+
+    echo -e "${YELLOW}Installing core Python packages...${NC}"
+    conda install -y -c conda-forge \
+        numpy pandas scipy scikit-learn || echo -e "${YELLOW}Some core packages failed, continuing...${NC}"
+
+    echo -e "${YELLOW}Installing visualization packages...${NC}"
+    conda install -y -c conda-forge \
+        matplotlib seaborn jupyter ipykernel || echo -e "${YELLOW}Some visualization packages failed, continuing...${NC}"
+
+    echo -e "${YELLOW}Installing additional scientific packages...${NC}"
+    conda install -y -c conda-forge \
+        httpie molmass networkx numba scanpy || echo -e "${YELLOW}Some additional packages failed, continuing...${NC}"
+
+    # HTSeq from bioconda
+    echo -e "${YELLOW}Installing HTSeq...${NC}"
+    conda install -y -c conda-forge -c bioconda htseq || echo -e "${YELLOW}HTSeq failed, continuing...${NC}"
 
     # PyTorch and related packages (platform-specific)
+    echo -e "${GREEN}Installing PyTorch and related packages...${NC}"
     if [[ "$PLATFORM" == "darwin" ]] && [[ "$ARCH" == "arm64" ]]; then
-        # For ARM Macs, PyTorch might need special handling
-        echo -e "${YELLOW}Installing PyTorch for ARM Mac (may use CPU version)${NC}"
+        echo -e "${YELLOW}Note: On ARM Mac, PyTorch may use CPU version for compatibility${NC}"
     fi
 
-    conda install -y \
-        pytorch::torch=2.2.2 \
-        pytorch::torchvision \
-        conda-forge::torchsde
+    echo -e "${YELLOW}Installing PyTorch 2.2.2...${NC}"
+    conda install -y -c pytorch torch=2.2.2 torchvision || {
+        echo -e "${YELLOW}PyTorch installation failed, trying without version pin...${NC}"
+        conda install -y -c pytorch torch torchvision || echo -e "${YELLOW}PyTorch failed, continuing...${NC}"
+    }
 
-    # R and R packages
+    echo -e "${YELLOW}Installing torchsde...${NC}"
+    conda install -y -c conda-forge torchsde || echo -e "${YELLOW}torchsde failed, continuing...${NC}"
+
+    # R and R packages - install in batches for better success rate
     echo -e "${GREEN}Installing R and R packages...${NC}"
-    conda install -y \
-        conda-forge::r-base \
-        conda-forge::r-essentials \
-        bioconda::bioconductor \
-        conda-forge::r-biocmanager \
-        conda-forge::r-dplyr \
-        conda-forge::r-ggplot2 \
-        conda-forge::r-seurat \
-        conda-forge::r-tidyverse \
-        bioconda::bioconductor-recount3 \
-        bioconda::bioconductor-deseq2 \
-        bioconda::bioconductor-edger \
-        bioconda::bioconductor-rsubread
+
+    echo -e "${YELLOW}Installing R base and essentials...${NC}"
+    conda install -y -c conda-forge r-base r-essentials || echo -e "${YELLOW}R base failed, continuing...${NC}"
+
+    echo -e "${YELLOW}Installing R tidyverse packages...${NC}"
+    conda install -y -c conda-forge r-tidyverse r-dplyr r-ggplot2 || echo -e "${YELLOW}Some tidyverse packages failed, continuing...${NC}"
+
+    echo -e "${YELLOW}Installing Bioconductor packages...${NC}"
+    conda install -y -c conda-forge -c bioconda \
+        bioconductor r-biocmanager || echo -e "${YELLOW}Some Bioconductor packages failed, continuing...${NC}"
+
+    echo -e "${YELLOW}Installing Seurat for single-cell analysis...${NC}"
+    conda install -y -c conda-forge r-seurat || echo -e "${YELLOW}Seurat failed, continuing...${NC}"
+
+    echo -e "${YELLOW}Installing RNA-seq analysis packages...${NC}"
+    conda install -y -c bioconda \
+        bioconductor-deseq2 bioconductor-edger || echo -e "${YELLOW}Some RNA-seq packages failed, continuing...${NC}"
+
+    echo -e "${YELLOW}Installing additional Bioconductor packages...${NC}"
+    conda install -y -c bioconda \
+        bioconductor-recount3 bioconductor-rsubread || echo -e "${YELLOW}Some additional packages failed, continuing...${NC}"
 
     # Set up the kernel for Jupyter
     python -m ipykernel install --user --name=bioinformatics --display-name="Bioinformatics"
